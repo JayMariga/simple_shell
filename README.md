@@ -6,3 +6,4 @@ They are:
 
 PROGRESS:
 1. Wrote a simple betty style code
+2. Code that executes command the user typed and frees the command and linked lists before exiting.e

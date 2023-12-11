@@ -18,6 +18,8 @@
 /* PROTOTYPES */
 char *_strcpy(char *dest, char *src);
 int main(int ac, char **av, char **env);
+int _execve(char **s, list_t *env, int num);
+void c_exit(char **str, list_t *env);
 
 
 
