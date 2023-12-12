@@ -33,4 +33,20 @@ size_t get_line(char **str);
 
 
 
+
+/**
+ * struct list - Linked list structure for env variables.
+ * @var: Holds the env variable string.
+ * @next: Should point to next node in linked list.
+ */
+
+typedef struct list
+{
+	char *var;
+	struct list *next;
+
+} list_t;
+
+
+
 #endif
