@@ -34,7 +34,7 @@ int _execve(char **s, list_t *env, int num);
 void c_exit(char **str, list_t *env);
 char *get_env(char *str, list_t *env);
 char *c_strdup(char *str, int cs);
-int __exit(char **str, list_t *env, int num, char **command);
+int _exit(char **str, list_t *env, int num, char **command);
 int c_atoi(char *s);
 int _unsetenv(list_t **env, char **str);
 int find_env(list_t *env, char *str);
