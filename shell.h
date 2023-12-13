@@ -55,6 +55,7 @@ int built_in(char **token, list_t *env, int num, char **command);
 char *ignore_space(char *str);
 void ctrl_D(int i, char *command, list_t *env);
 int prompt(char **en);
+char *_strcat(char *dest, char *src);
 
 
 
