@@ -30,11 +30,11 @@ typedef struct list
 /* PROTOTYPES */
 char *_strcpy(char *dest, char *src);
 int main(int ac, char **av, char **env);
-int _execve(char **s, list_t *env, int num);
+int _execve(char *argv[], list_t *env, int num);
 void c_exit(char **str, list_t *env);
 char *get_env(char *str, list_t *env);
 char *c_strdup(char *str, int cs);
-int __exit(char **str, list_t *env, int num, char **command);
+int __exit(char **s, list_t *env, int num, char **command);
 int c_atoi(char *s);
 int _unsetenv(list_t **env, char **str);
 int find_env(list_t *env, char *str);
@@ -54,7 +54,7 @@ void ctrl_c(int n);
 int built_in(char **token, list_t *env, int num, char **command);
 char *ignore_space(char *str);
 void ctrl_D(int i, char *command, list_t *env);
-int prompt(char **en);
+int prompt(char **env);
 char *_strcat(char *dest, char *src);
 int _strcmp(char *s1, char *s2);
 char *_strdup(char *str);
