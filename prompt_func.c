@@ -117,7 +117,7 @@ int prompt(char **en)
 		else
 			non_interactive(env);
 		signal(SIGINT, ctrl_c); /* It makes ctrl+c not work */
-		command = NULl;
+		command = NULL;
 		i = 0; /* Will reset vars each time loop runs */
 
 		i = get_line(&command); /* WIll help read user's cmd in stdin */
