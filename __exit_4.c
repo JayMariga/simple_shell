@@ -10,7 +10,7 @@
  * Return: 0 if successful, and  2 if fail
  */
 
-int _exit(char **str, list_t *env, int num, char **command)
+int __exit(char **str, list_t *env, int num, char **command)
 {
 	int e_value = 0;
 

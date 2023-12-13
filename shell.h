@@ -1,5 +1,5 @@
-#ifndef SHELL
-#define SHELL
+#ifndef SHELL_H
+#define SHELL_H
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -34,7 +34,7 @@ int _execve(char **s, list_t *env, int num);
 void c_exit(char **str, list_t *env);
 char *get_env(char *str, list_t *env);
 char *c_strdup(char *str, int cs);
-int _exit(char **str, list_t *env, int num, char **command);
+int __exit(char **str, list_t *env, int num, char **command);
 int c_atoi(char *s);
 int _unsetenv(list_t **env, char **str);
 int find_env(list_t *env, char *str);
@@ -57,7 +57,11 @@ void ctrl_D(int i, char *command, list_t *env);
 int prompt(char **en);
 char *_strcat(char *dest, char *src);
 int _strcmp(char *s1, char *s2);
-
+char *_strdup(char *str);
+char **_str_tok(char *str, char *delm);
+char *ignore_delm(char *str, char delm);
+int t_size(char *str, char delm);
+int t_strlen(char *str, int pos, char delm);
 
 
 
