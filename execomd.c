@@ -1,7 +1,7 @@
 #include "shell.h"
 
 /**
- * c_exit - SHould frees user's typed comd and 
+ * c_exit - SHould frees user's typed comd and
  * linked list before exiting
  * @str: The user's typed comd
  * @env: input the linked list of env
@@ -28,19 +28,16 @@ int _execve(char **s, list_t *env, int num)
 	char *holder;
 	int status = 0, t = 0;
 	pid_t pid;
-
 	/* For checking if command is absolute path */
 	if (access(s[0], F_OK) == 0)
 	{
 		holder = s[0];
 		t = 1;
 	}
-
 	/* If not, then flesh out full path */
 	else
 		holder = _which(s[0], env);
-	/* And if it is not an executable, free */
-	if (access(holder, X_OK) != 0)
+	if (access(holder, X_OK) != 0) /* And if it is not an executable,free*/
 	{
 		not_found(s[0], num, env);
 		free_double_ptr(s);

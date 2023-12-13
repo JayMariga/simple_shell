@@ -12,30 +12,30 @@
 
 char *c_strdup(char *str, int cs)
 {
-        char *duplicate_str;
-        int i, len = 0;
+	char *duplicate_str;
+	int i, len = 0;
 
-        /* This is to validate str input */
-        if (str == NULL)
-                return (NULL);
+	/* This is to validate str input */
+	if (str == NULL)
+	return (NULL);
 
-        /* calculates the len + null terminator to malloc */
-        while (*(str + len))
-                len++;
-        len++;
+	/* calculates the len + null terminator to malloc */
+	while (*(str + len))
+		len++;
+	len++;
 
-        /* allocate memory but exclude environmental variable title */
-        duplicate_str = malloc(sizeof(char) * (len - cs));
-        if (duplicate_str == NULL)
-                return (NULL);
+	/* allocate memory but exclude environmental variable title */
+	duplicate_str = malloc(sizeof(char) * (len - cs));
+	if (duplicate_str == NULL)
+		return (NULL);
 
-        i = 0;
-        while (i < (len - cs))
-        {
-                *(duplicate_str + i) = *(str + cs + i);
-                i++;
-        }
-        return (duplicate_str);
+	i = 0;
+	while (i < (len - cs))
+	{
+		*(duplicate_str + i) = *(str + cs + i);
+		i++;
+	}
+	return (duplicate_str);
 }
 
 

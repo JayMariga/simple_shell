@@ -29,9 +29,9 @@ int c_t_size(char *str, char delm)
  * (e.g. path --> ":/bin::/bin/usr" )
  * @str: The user's command typed into shell
  * @delm: Delimeter in (e.g. " ");
- * 
+ *
  * Return: An array of tokens (e.g. {"\0", "/bin", "\0", "/bin/usr"}
- * (The purpose is to the 'which' command look through current directory if ":")
+ *(The purpose is to the 'which' command look through current directory if ":")
  */
 
 char **c_str_tok(char *str, char *delm)

@@ -9,6 +9,7 @@
  *
  * Return: The token length
  */
+
 int t_strlen(char *str, int pos, char delm)
 {
 	int len = 0;
@@ -80,10 +81,8 @@ char **_str_tok(char *str, char *delm)
 	char **toks = NULL, d_ch;
 
 	d_ch = delm[0];
-
 	/* creates a new version of string ignoring all delimiters infront*/
 	str = ignore_delm(str, d_ch);
-
 	/* malloc pointers to store array of tokens (buffsize + 1), and NULL ptr */
 	buffsize = t_size(str, d_ch);
 	toks = malloc(sizeof(char *) * (buffsize + 2));
@@ -92,7 +91,7 @@ char **_str_tok(char *str, char *delm)
 	while (str[se] != '\0')	/* Find the string ending index */
 		se++;
 	while (si < se)
-	{ 
+	{
 		/* malloc lengths for each token pointer in the array */
 		if (str[si] != d_ch)
 		{
@@ -110,7 +109,6 @@ char **_str_tok(char *str, char *delm)
 			toks[p][i] = '\0'; /* Null terminate at the end*/
 			t++;
 		}
-
 		/* We handle repeated delims; increment pointer after ("ls __-l")*/
 		if (si < se && (str[si + 1] != d_ch && str[si + 1] != '\0'))
 			p++;

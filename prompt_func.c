@@ -1,7 +1,7 @@
 #include "shell.h"
 
 /**
- * ctrl_c - Handle Ctrl-c signal, to ignore input the 
+ * ctrl_c - Handle Ctrl-c signal, to ignore input the
  * prints the prompt.
  * @n: Takes the int value from signal.
  */
@@ -117,7 +117,9 @@ int prompt(char **en)
 		else
 			non_interactive(env);
 		signal(SIGINT, ctrl_c); /* It makes ctrl+c not work */
-		command = NULL; i = 0; /* Will reset vars each time loop runs */
+		command = NULl;
+		i = 0; /* Will reset vars each time loop runs */
+
 		i = get_line(&command); /* WIll help read user's cmd in stdin */
 		ctrl_D(i, command, env); /* Hence exits shell if ctrl-D */
 		n_command = command;
@@ -126,11 +128,14 @@ int prompt(char **en)
 		while (command[n] != '\n') /* Should replace get_line's \n with \0 */
 			n++;
 		command[n] = '\0';
+
 		if (command[0] == '\0') /* reprompt incase user hits enter only */
 		{
-			free(n_command); continue;
+			free(n_command);
+			continue;
 		}
-		token = NULL; token = _str_tok(command, " "); /* This is token user cmd*/
+		token = NULL;
+		token = _str_tok(command, " "); /* This is token user cmd*/
 		if (n_command != NULL)
 			free(n_command);
 		exit_stat = built_in(token, env, command_line_no, NULL);

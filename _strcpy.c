@@ -7,22 +7,22 @@
  *
  * @dest: Copies source to buffer
  * @src: Will be the source to copy
- * 
+ *
  * Return: Pointer to the destination string source
  */
 
 char *_strcpy(char *dest, char *src)
 {
-        int i, len;
+	int i, len;
 
-        /* Calculate the length of the source string */
-        for (len = 0; src[len] != '\0'; len++)
-                ;
+	/* Calculate the length of the source string */
+	for (len = 0; src[len] != '\0'; len++)
+		;
 
-        /* copy each character from source to destination */
-        for (i = 0; i <= len; i++)
-                dest[i] = src[i];
+	/* copy each character from source to destination */
+	for (i = 0; i <= len; i++)
+		dest[i] = src[i];
 
-        /* Return the destination string */
-        return (dest);
+	/* Return the destination string */
+	return (dest);
 }
