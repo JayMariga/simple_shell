@@ -28,6 +28,8 @@ int _unsetenv(list_t **env, char **str);
 int find_env(list_t *env, char *str);
 int _setenv(list_t **env, char **str);
 size_t get_line(char **str);
+list_t *env_linked_list(char **env);
+list_t *add_end_node(list_t **head, char *str);
 
 
 
