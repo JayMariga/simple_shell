@@ -71,15 +71,13 @@ int numlen(int n);
 size_t print_list(list_t *h);
 int delete_nodeint_at_index(list_t **head, int index);
 char *c_ignore(char *str);
-
-
-
-
-
-
-
-
-
+char *_strdup(char *str);
+int _cd(char **str, list_t *env, int num);
+char *c_strcat(char *dest, char *src);
+int c_setenv(list_t **env, char *name, char *dir);
+void cd_only(list_t *env, char *current);
+int cd_execute(list_t *env, char *current, char *dir, char *str, int num);
+int _cd(char **str, list_t *env, int num);
 
 
 #endif
