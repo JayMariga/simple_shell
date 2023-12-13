@@ -34,4 +34,4 @@ char *_strdup(char *str)
 	}
 
 	return (duplicate_str);
-}i
+}

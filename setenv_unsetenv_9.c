@@ -109,7 +109,7 @@ int _setenv(list_t **env, char **str)
 	/* Checking if environment var exists */
 	if (index == -1)
 	{
-		add_end_node(env, new_node_data);
+		add_end_node(env, cat);
 	}
 	else
 	{
