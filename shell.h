@@ -68,6 +68,9 @@ char **c_str_tok(char *str, char *delm);
 int _env(char **str, list_t *env);
 char *int_to_string(int number);
 int numlen(int n);
+size_t print_list(list_t *h);
+int delete_nodeint_at_index(list_t **head, int index);
+char *c_ignore(char *str);
 
 
 
