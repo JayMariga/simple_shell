@@ -1,28 +1,90 @@
 #include "shell.h"
 
+int _strlen(const char *s);
+char *_strcpy(char *dest, const char *src);
+char *_strcat(char *dest, const char *src);
+char *_strncat(char *dest, const char *src, size_t n);
+
 /**
- * _strcpy - Should copy a string that is pointed to by src,
- * and should include the terminating null byte (\0),
- * to buffer pointed to by dest
+ * _strlen - Should return the length of a string.
+ * @s: Pointer to char string.
  *
- * @dest: Copies source to buffer
- * @src: Will be the source to copy
- *
- * Return: Pointer to the destination string source
+ * Return: The length of char string.
  */
 
-char *_strcpy(char *dest, char *src)
+int _strlen(const char *s)
 {
-	int i, len;
+	int length = 0;
 
-	/* Calculate the length of the source string */
-	for (len = 0; src[len] != '\0'; len++)
+	if (!s)
+		return (length);
+	for (length = 0; s[length]; length++)
 		;
+	return (length);
+}
 
-	/* copy each character from source to destination */
-	for (i = 0; i <= len; i++)
+/**
+ * _strcpy - Should copy the string pointed to by src, with the
+ * terminating null byte, to the buffer pointed.
+ * @dest: This is the pointer to the destination of copied string.
+ * @src: Pointer to the src of source string.
+ *
+ * Return: Pointer to destination.
+ */
+
+char *_strcpy(char *dest, const char *src)
+{
+	size_t i;
+
+	for (i = 0; src[i] != '\0'; i++)
 		dest[i] = src[i];
+	dest[i] = '\0';
+	return (dest);
+}
 
-	/* Return the destination string */
+/**
+ * _strcat - Should concantenates 2 strings.
+ * @dest: This is the pointer to the destination string.
+ * @src: This is the Pointer to source string.
+ *
+ * Return: Pointer to destination
+ */
+
+char *_strcat(char *dest, const char *src)
+{
+	char *destTemp;
+	const char *srcTemp;
+
+	destTemp = dest;
+	srcTemp =  src;
+
+	while (*destTemp != '\0')
+		destTemp++;
+
+	while (*srcTemp != '\0')
+		*destTemp++ = *srcTemp++;
+	*destTemp = '\0';
+	return (dest);
+}
+
+/**
+ * _strncat - Concantenates two strings in an instance where
+ * n number of bytes are copied from source.
+ * @dest: This is the pointer to destination string.
+ * @src: This is the pointer to source string.
+ * @n: The n bytes to copy from src.
+ *
+ * Return: Pointer to destination.
+ */
+
+char *_strncat(char *dest, const char *src, size_t n)
+{
+	size_t dest_len = _strlen(dest);
+	size_t i;
+
+	for (i = 0; i < n && src[i] != '\0'; i++)
+		dest[dest_len + i] = src[i];
+	dest[dest_len + i] = '\0';
+
 	return (dest);
 }

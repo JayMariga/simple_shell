@@ -1,66 +1,74 @@
 #include "shell.h"
 
+char *error_126(char **args);
+char *error_127(char **args);
+
 /**
- * c_exit - SHould frees user's typed comd and
- * linked list before exiting
- * @str: The user's typed comd
- * @env: input the linked list of env
+ * error_126 - Should create an error message for permission failures.
+ * @args: A list of arguments passed to the command.
+ *
+ * Return: Error string.
  */
 
-void c_exit(char **str, list_t *env)
+char *error_126(char **args)
 {
-	free_double_ptr(str);
-	free_linked_list(env);
-	_exit(0);
+	char *error, *hist_str;
+	int len;
+
+	hist_str = _itoa(hist);
+	if (!hist_str)
+		return (NULL);
+
+	len = _strlen(name) + _strlen(hist_str) + _strlen(args[0]) + 24;
+	error = malloc(sizeof(char) * (len + 1));
+	if (!error)
+	{
+		free(hist_str);
+		return (NULL);
+	}
+
+	_strcpy(error, name);
+	_strcat(error, ": ");
+	_strcat(error, hist_str);
+	_strcat(error, ": ");
+	_strcat(error, args[0]);
+	_strcat(error, ": Permission denied\n");
+
+	free(hist_str);
+	return (error);
 }
 
 /**
- * _execve - Should execute comd user typed into shell
- * @s:The  comd the user typed
- * @env: The env var
- * @num:The nth user comd;That is to be used in error message
+ * error_127 - Error messages for command not found failures.
+ * @args: A list of arguments passed to the command.
  *
- * Return: 0 on success
+ * Return: Error string.
  */
 
-int _execve(char **s, list_t *env, int num)
+char *error_127(char **args)
 {
-	char *holder;
-	int status = 0, t = 0;
-	pid_t pid;
-	/* For checking if command is absolute path */
-	if (access(s[0], F_OK) == 0)
+	char *error, *hist_str;
+	int len;
+
+	hist_str = _itoa(hist);
+	if (!hist_str)
+		return (NULL);
+
+	len = _strlen(name) + _strlen(hist_str) + _strlen(args[0]) + 16;
+	error = malloc(sizeof(char) * (len + 1));
+	if (!error)
 	{
-		holder = s[0];
-		t = 1;
+		free(hist_str);
+		return (NULL);
 	}
-	/* If not, then flesh out full path */
-	else
-		holder = _which(s[0], env);
-	if (access(holder, X_OK) != 0) /* And if it is not an executable,free*/
-	{
-		not_found(s[0], num, env);
-		free_double_ptr(s);
-		return (127);
-	}
-	else /* If not, then fork and execute executable command */
-	{
-		pid = fork();
-		if (pid == 0) /* And if its child process, execute */
-		{
-			if (execve(holder, s, NULL) == -1)
-			{
-				not_found(s[0], num, env); /* A special err msg */
-				c_exit(s, env);
-			}
-		}
-		else /* And if parent, wait for child then free all */
-		{
-			wait(&status);
-			free_double_ptr(s);
-			if (t == 0)
-				free(holder);
-		}
-	}
-	return (0);
+
+	_strcpy(error, name);
+	_strcat(error, ": ");
+	_strcat(error, hist_str);
+	_strcat(error, ": ");
+	_strcat(error, args[0]);
+	_strcat(error, ": not found\n");
+
+	free(hist_str);
+	return (error);
 }

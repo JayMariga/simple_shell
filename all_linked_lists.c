@@ -1,134 +1,117 @@
 #include "shell.h"
 
+alias_t *add_alias_end(alias_t **head, char *name, char *value);
+void free_alias_list(alias_t *head);
+list_t *add_node_end(list_t **head, char *dir);
+void free_list(list_t *head);
+
 /**
- * print_list - Should print linked list
- * @h: The linked list
+ * add_alias_end - Should add a node to the end of the linked list.
+ * @head: Is the  pointer to the head of the list.
+ * @name: Is the  name of the new alias to be added.
+ * @value: Will be the value of the new alias to be added.
  *
- * Return: The size of the linked list
+ * Return: Incase of an error occurs - NULL.
+ *         If no error - a pointer to the new node.
  */
 
-size_t print_list(list_t *h)
+alias_t *add_alias_end(alias_t **head, char *name, char *value)
 {
-	list_t *c_list = h;
-	int count = 0;
-	int c = 0;
+	alias_t *new_node = malloc(sizeof(alias_t));
+	alias_t *last;
 
-	if (h == NULL)
-		return (0);
-	while (c_list != NULL)
+	if (!new_node)
+		return (NULL);
+
+	new_node->next = NULL;
+	new_node->name = malloc(sizeof(char) * (_strlen(name) + 1));
+	if (!new_node->name)
 	{
-		if (c_list->var == NULL)
-		{
-			write(STDOUT_FILENO, "(nil)", 5);
-			write(STDOUT_FILENO, "\n", 1);
-		}
-		else
-		{
-			c = 0;
-			while ((c_list->var)[c] != '\0')
-				c++;
-			write(STDOUT_FILENO, c_list->var, c);
-			write(STDOUT_FILENO, "\n", 1);
-		}
-		c_list = c_list->next;
-		count++;
+		free(new_node);
+		return (NULL);
 	}
-	return (count);
-}
+	new_node->value = value;
+	_strcpy(new_node->name, name);
 
-/**
- * add_end_node - Should add node to end of the linked list
- * @head: The pointer to head of the linked list
- * @str: The data to a new node
- *
- * Return: A pointer to a new linked list
- */
-
-list_t *add_end_node(list_t **head, char *str)
-{
-	list_t *new;
-	list_t *holder;
-
-	if (head == NULL || str == NULL)
-		/* Checking if the address of head is null */
-		return (NULL);
-	new = malloc(sizeof(list_t));
-	if (new == NULL)
-		return (NULL);
-
-	new->var = _strdup(str);
-	new->next = NULL;
-
-	holder = *head;
-	if (holder != NULL)
+	if (*head)
 	{
-		while (holder->next != NULL)
-		{
-			holder = holder->next;
-		}
-		holder->next = new;
+		last = *head;
+		while (last->next != NULL)
+			last = last->next;
+		last->next = new_node;
 	}
 	else
-	{
-		*head = new;
-	}
-	return (*head);
+		*head = new_node;
+
+	return (new_node);
 }
 
 /**
- * delete_nodeint_at_index - Getting to removing node at index
- * @head: input the head address
- * @index: The input index
- * Return: 1 if it is a success, -1 if fail
+ * add_node_end - Should add node to the end of the linked list.
+ * @head: This is pointer to the head of the list.
+ * @dir: Path for the new node to contain.
+ *
+ * Return: In case an error occurs - NULL.
+ *         If not - a pointer to the new node.
  */
 
-int delete_nodeint_at_index(list_t **head, int index)
+list_t *add_node_end(list_t **head, char *dir)
 {
-	list_t *n_head;
-	list_t *holder;
-	int count = 0;
+	list_t *new_node = malloc(sizeof(list_t));
+	list_t *last;
 
-	if (*head == NULL)
-		return (-1);
-	if (index == 0)
+	if (!new_node)
+		return (NULL);
+
+	new_node->dir = dir;
+	new_node->next = NULL;
+
+	if (*head)
 	{
-		holder = (*head)->next;
-		free((*head)->var);
-		free(*head);
-		*head = holder;
-		return (1);
+		last = *head;
+		while (last->next != NULL)
+			last = last->next;
+		last->next = new_node;
 	}
-	count = 1;
-	n_head = *head;
-	while (count < index)
-	{
-		if (n_head == NULL)
-			return (-1);
-		n_head = n_head->next;
-		count++;
-	}
-	holder = n_head->next;
-	n_head->next = holder->next;
-	free(holder->var);
-	free(holder);
-	return (1);
+	else
+		*head = new_node;
+
+	return (new_node);
 }
 
 /**
- * free_linked_list - Should free the linked list
- * @list: The linked list
+ * free_alias_list - Should Free the linked list.
+ * @head: This is head of the list.
  */
 
-void free_linked_list(list_t *list)
+void free_alias_list(alias_t *head)
 {
-	list_t *holder;
+	alias_t *next;
 
-	while (list != NULL)
+	while (head)
 	{
-		holder = list;
-		list = list->next;
-		free(holder->var);
-		free(holder);
+		next = head->next;
+		free(head->name);
+		free(head->value);
+		free(head);
+		head = next;
 	}
+}
 
+/**
+ * free_list - Should frees the linked list.
+ * @head: This is the head of the list.
+ */
+
+void free_list(list_t *head)
+{
+	list_t *next;
+
+	while (head)
+	{
+		next = head->next;
+		free(head->dir);
+		free(head);
+		head = next;
+	}
 }

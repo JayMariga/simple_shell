@@ -1,75 +1,105 @@
 #include "shell.h"
 
+int token_len(char *str, char *delim);
+int count_tokens(char *str, char *delim);
+char **_strtok(char *line, char *delim);
+
 /**
- * c_t_size - Should return no of delimiters.
- * @str: The user's command typed into a shell
- * @delm: The delimiter (e.g. " ");
+ * token_len - Locates the del index marking the end
+ * of the 1st token contained within a string.
+ * @str: The string to search
+ * @delim: The del char
  *
- * Return: no. of tokens
+ * Return: Delimiter index marking the end of intitial token pointed to be str.
  */
 
-int c_t_size(char *str, char delm)
+int token_len(char *str, char *delim)
 {
-	int i = 0, num_delm = 0;
+	int index = 0, len = 0;
 
-	while (str[i] != '\0')
+	while (*(str + index) && *(str + index) != *delim)
 	{
-		if (str[i] == delm)
-		{
-			num_delm++;
-		}
-		i++;
+		len++;
+		index++;
 	}
-	return (num_delm);
+
+	return (len);
 }
 
-
 /**
- * c_str_tok - tokenizes a string even with continuous delim with empty string
- * (e.g. path --> ":/bin::/bin/usr" )
- * @str: The user's command typed into shell
- * @delm: Delimeter in (e.g. " ");
+ * count_tokens - Counts the number of words contained within a string.
+ * @str: String to search
+ * @delim: Delimiter character.
  *
- * Return: An array of tokens (e.g. {"\0", "/bin", "\0", "/bin/usr"}
- *(The purpose is to the 'which' command look through current directory if ":")
+ * Return: The no. of words contained within str.
  */
 
-char **c_str_tok(char *str, char *delm)
+int count_tokens(char *str, char *delim)
 {
-	int buffsize = 0, p = 0, si = 0, i = 0, len = 0, se = 0;
-	char **toks = NULL, d_ch;
+	int index, tokens = 0, len = 0;
 
-	/* set the variable to be the delimiter character (" ") */
-	d_ch = delm[0];
+	for (index = 0; *(str + index); index++)
+		len++;
 
-	/* malloc number of pointers to store an array of tokens, and NULL ptr */
-	buffsize = c_t_size(str, d_ch);
-	toks = malloc(sizeof(char *) * (buffsize + 2));
-	if (toks == NULL)
+	for (index = 0; index < len; index++)
+	{
+		if (*(str + index) != *delim)
+		{
+			tokens++;
+			index += token_len(str + index, delim);
+		}
+	}
+
+	return (tokens);
+}
+
+/**
+ * _strtok - Should tokenize a string.
+ * @line: The string to tokenize.
+ * @delim: The delimiter char to tokenize string by.
+ *
+ * Return: A pointer to list containing the tokenized words.
+ */
+
+char **_strtok(char *line, char *delim)
+{
+	char **ptr;
+	int index = 0, tokens, t, letters, l;
+
+	tokens = count_tokens(line, delim);
+	if (tokens == 0)
 		return (NULL);
 
-	/* We iterate from string index 0 to string ending index */
-	while (str[se] != '\0')
-		se++;
-	while (si < se)
+	ptr = malloc(sizeof(char *) * (tokens + 2));
+	if (!ptr)
+		return (NULL);
+
+	for (t = 0; t < tokens; t++)
 	{
-		/* Malloc lengths for each token pointer in the array */
-		len = t_strlen(str, si, d_ch);
-		toks[p] = malloc(sizeof(char) * (len + 1));
-		if (toks[p] == NULL)
-			return (NULL);
-		i = 0;
-		while ((str[si] != d_ch) &&
-		       (str[si] != '\0'))
+		while (line[index] == *delim)
+			index++;
+
+		letters = token_len(line + index, delim);
+
+		ptr[t] = malloc(sizeof(char) * (letters + 1));
+		if (!ptr[t])
 		{
-			toks[p][i] = str[si];
-			i++;
-			si++;
+			for (index -= 1; index >= 0; index--)
+				free(ptr[index]);
+			free(ptr);
+			return (NULL);
 		}
-		toks[p][i] = '\0';
-		p++;
-		si++;
+
+		for (l = 0; l < letters; l++)
+		{
+			ptr[t][l] = line[index];
+			index++;
+		}
+
+		ptr[t][l] = '\0';
 	}
-	toks[p] = NULL; /* We set the last array pointer to NULL */
-	return (toks);
+	ptr[t] = NULL;
+	ptr[t + 1] = NULL;
+
+	return (ptr);
 }

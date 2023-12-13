@@ -1,62 +1,176 @@
 #include "shell.h"
 
+char *error_env(char **args);
+char *error_1(char **args);
+char *error_2_exit(char **args);
+char *error_2_cd(char **args);
+char *error_2_syntax(char **args);
 /**
- * c_ignore - A custom function to ignore spaces and newlines
- * (e.g. echo "ls\n ls" | ./a.out)
- * @str: env vars
+ * error_env - Should create an error message for the errors.
+ * @args: This is a list of arguments passed to the command.
  *
- * Return: new string
+ * Return: Error string.
  */
 
-char *c_ignore(char *str)
+char *error_env(char **args)
 {
-	while (*str == ' ' || *str == '\n')
-		str++;
-	return (str);
+	char *error, *hist_str;
+	int len;
+
+	hist_str = _itoa(hist);
+	if (!hist_str)
+		return (NULL);
+
+	args--;
+	len = _strlen(name) + _strlen(hist_str) + _strlen(args[0]) + 45;
+	error = malloc(sizeof(char) * (len + 1));
+	if (!error)
+	{
+		free(hist_str);
+		return (NULL);
+	}
+
+	_strcpy(error, name);
+	_strcat(error, ": ");
+	_strcat(error, hist_str);
+	_strcat(error, ": ");
+	_strcat(error, args[0]);
+	_strcat(error, ": Unable to add/remove from environment\n");
+
+	free(hist_str);
+	return (error);
 }
 
 /**
- * non_interactive - Should handle when user pipes commands
- * into the shell via pipeline (e.g. echo "ls/nls -al/n" | ./a.out)
+ * error_1 - Should create anothr error message for the errors.
+ * @args: Is a no. of list of arguments passed to the command.
  *
- * @env: env vars
+ * Return: Error string.
  */
 
-void non_interactive(list_t *env)
+char *error_1(char **args)
 {
-	size_t i = 0, n = 0;
-	int command_line_no = 0, exit_stat = 0;
-	char *command = NULL, *n_command = NULL, **n_line, **token;
+	char *error;
+	int len;
 
-	i = get_line(&command);
-	if (i == 0)
+	len = _strlen(name) + _strlen(args[0]) + 13;
+	error = malloc(sizeof(char) * (len + 1));
+	if (!error)
+		return (NULL);
+
+	_strcpy(error, "alias: ");
+	_strcat(error, args[0]);
+	_strcat(error, " not found\n");
+
+	return (error);
+}
+
+/**
+ * error_2_exit - Should creates another error message for the errors.
+ * @args: Is a no. of list of arguments passed to the command.
+ *
+ * Return: Error string.
+ */
+
+char *error_2_exit(char **args)
+{
+	char *error, *hist_str;
+	int len;
+
+	hist_str = _itoa(hist);
+	if (!hist_str)
+		return (NULL);
+
+	len = _strlen(name) + _strlen(hist_str) + _strlen(args[0]) + 27;
+	error = malloc(sizeof(char) * (len + 1));
+	if (!error)
 	{
-		free(command);
-		exit(0);
+		free(hist_str);
+		return (NULL);
 	}
-	n_command = command;
-	command = c_ignore(command);
-	/* To tokenize each cmd string */
-	n_line = _str_tok(command, "\n");
-	if (n_command != NULL)
-		free(n_command);
-	n = 0;
-	while (n_line[n] != NULL)
+
+	_strcpy(error, name);
+	_strcat(error, ": ");
+	_strcat(error, hist_str);
+	_strcat(error, ": exit: Illegal number: ");
+	_strcat(error, args[0]);
+	_strcat(error, "\n");
+
+	free(hist_str);
+	return (error);
+}
+
+/**
+ * error_2_cd - Should create a error message for errors.
+ * @args: A list of arguments passed to the command.
+ *
+ * Return: Error string.
+ */
+
+char *error_2_cd(char **args)
+{
+	char *error, *hist_str;
+	int len;
+
+	hist_str = _itoa(hist);
+	if (!hist_str)
+		return (NULL);
+
+	if (args[0][0] == '-')
+		args[0][2] = '\0';
+	len = _strlen(name) + _strlen(hist_str) + _strlen(args[0]) + 24;
+	error = malloc(sizeof(char) * (len + 1));
+	if (!error)
 	{
-		command_line_no++;
-		/* To tokenize each cmd inarray of cmds */
-		token = NULL;
-		token = _str_tok(n_line[n], " ");
-		exit_stat = built_in(token, env, command_line_no, n_line);
-		if (exit_stat)
-		{
-			n++;
-			continue;
-		}
-		exit_stat = _execve(token, env, command_line_no);
-		n++;
+		free(hist_str);
+		return (NULL);
 	}
-	free_double_ptr(n_line);
-	free_linked_list(env);
-	exit(exit_stat);
+
+	_strcpy(error, name);
+	_strcat(error, ": ");
+	_strcat(error, hist_str);
+	if (args[0][0] == '-')
+		_strcat(error, ": cd: Illegal option ");
+	else
+		_strcat(error, ": cd: can't cd to ");
+	_strcat(error, args[0]);
+	_strcat(error, "\n");
+
+	free(hist_str);
+	return (error);
+}
+
+/**
+ * error_2_syntax - Should create an error message for syntaxes.
+ * @args: A list of arguments passed to the command.
+ *
+ * Return: Error string.
+ */
+
+char *error_2_syntax(char **args)
+{
+	char *error, *hist_str;
+	int len;
+
+	hist_str = _itoa(hist);
+	if (!hist_str)
+		return (NULL);
+
+	len = _strlen(name) + _strlen(hist_str) + _strlen(args[0]) + 33;
+	error = malloc(sizeof(char) * (len + 1));
+	if (!error)
+	{
+		free(hist_str);
+		return (NULL);
+	}
+
+	_strcpy(error, name);
+	_strcat(error, ": ");
+	_strcat(error, hist_str);
+	_strcat(error, ": Syntax error: \"");
+	_strcat(error, args[0]);
+	_strcat(error, "\" unexpected\n");
+
+	free(hist_str);
+	return (error);
 }

@@ -1,42 +1,189 @@
 #include "shell.h"
 
+void handle_line(char **line, ssize_t read);
+ssize_t get_new_len(char *line);
+void logical_ops(char *line, ssize_t *new_len);
+
 /**
- * _which - Completes a command by appending it to a matching PATH directory
- * @str: Innitial command user typed to shell (e.g. "ls" if user typed "ls -l")
- * @env: env variable linked list
- *
- * Return: A copy of Completed out command (e.g. "/bin/ls" if originally "ls")
+ * handle_line - DIvides a line read from standard input as needed.
+ * @line: A pointer to a line that has been read from standard input.
+ * @read: Should be the length of line.
+ * Description: The spaces are put to separate ";", "||", and "&&".
+ * Replaces "#" with '\0'.
  */
 
-char *_which(char *str, list_t *env)
+void handle_line(char **line, ssize_t read)
 {
-	char *pth, *cat = NULL, **toks;
-	int i = 0;
+	char *old_line, *new_line;
+	char previous, current, next;
+	size_t i, j;
+	ssize_t new_len;
 
-	/* Get and tokenize PATH dir, then later free original string */
-	pth = get_env("PATH", env);
-	toks = c_str_tok(pth, ":");
-	free(pth);
-
-	/* Append "/cmd" to each token to see it's a legit cmd */
-	i = 0;
-	while (toks[i] != NULL)
+	new_len = get_new_len(*line);
+	if (new_len == read - 1)
+		return;
+	new_line = malloc(new_len + 1);
+	if (!new_line)
+		return;
+	j = 0;
+	old_line = *line;
+	for (i = 0; old_line[i]; i++)
 	{
-		if (toks[i][0] == '\0')
-			cat = getcwd(cat, 0);
-		else
-			cat = _strdup(toks[i]);
-		cat = _strcat(cat, "/");
-		cat = _strcat(cat, str);
-		if (access(cat, F_OK) == 0)
+		current = old_line[i];
+		next = old_line[i + 1];
+		if (i != 0)
 		{
-			/* Free tokens before returning legit completed path */
-			free_double_ptr(toks);
-			return (cat);
+			previous = old_line[i - 1];
+			if (current == ';')
+			{
+				if (next == ';' && previous != ' ' && previous != ';')
+				{
+					new_line[j++] = ' ';
+					new_line[j++] = ';';
+					continue;
+				}
+				else if (previous == ';' && next != ' ')
+				{
+					new_line[j++] = ';';
+					new_line[j++] = ' ';
+					continue;
+				}
+				if (previous != ' ')
+					new_line[j++] = ' ';
+				new_line[j++] = ';';
+				if (next != ' ')
+					new_line[j++] = ' ';
+				continue;
+			}
+			else if (current == '&')
+			{
+				if (next == '&' && previous != ' ')
+					new_line[j++] = ' ';
+				else if (previous == '&' && next != ' ')
+				{
+					new_line[j++] = '&';
+					new_line[j++] = ' ';
+					continue;
+				}
+			}
+			else if (current == '|')
+			{
+				if (next == '|' && previous != ' ')
+					new_line[j++]  = ' ';
+				else if (previous == '|' && next != ' ')
+				{
+					new_line[j++] = '|';
+					new_line[j++] = ' ';
+					continue;
+				}
+			}
 		}
-		free(cat); /* Free the concatenated str if cmd is never found */
-		i++;
+		else if (current == ';')
+		{
+			if (i != 0 && old_line[i - 1] != ' ')
+				new_line[j++] = ' ';
+			new_line[j++] = ';';
+			if (next != ' ' && next != ';')
+				new_line[j++] = ' ';
+			continue;
+		}
+		new_line[j++] = old_line[i];
 	}
-	free_double_ptr(toks);
-	return (str); /* Return original string if not found; won't pass execve */
+	new_line[j] = '\0';
+
+	free(*line);
+	*line = new_line;
+}
+
+/**
+ * get_new_len - Should give the new length of a line partitioned
+ * by ";", "||", "&&&", or "#".
+ * @line: Given line to check.
+ *
+ * Return: A new length of the line.
+ *
+ * Description: Should cut-short lines containing '#' comments with '\0'.
+ */
+
+ssize_t get_new_len(char *line)
+{
+	size_t i;
+	ssize_t new_len = 0;
+	char current, next;
+
+	for (i = 0; line[i]; i++)
+	{
+		current = line[i];
+		next = line[i + 1];
+		if (current == '#')
+		{
+			if (i == 0 || line[i - 1] == ' ')
+			{
+				line[i] = '\0';
+				break;
+			}
+		}
+		else if (i != 0)
+		{
+			if (current == ';')
+			{
+				if (next == ';' && line[i - 1] != ' ' && line[i - 1] != ';')
+				{
+					new_len += 2;
+					continue;
+				}
+				else if (line[i - 1] == ';' && next != ' ')
+				{
+					new_len += 2;
+					continue;
+				}
+				if (line[i - 1] != ' ')
+					new_len++;
+				if (next != ' ')
+					new_len++;
+			}
+			else
+				logical_ops(&line[i], &new_len);
+		}
+		else if (current == ';')
+		{
+			if (i != 0 && line[i - 1] != ' ')
+				new_len++;
+			if (next != ' ' && next != ';')
+				new_len++;
+		}
+		new_len++;
+	}
+	return (new_len);
+}
+
+
+/**
+ * logical_ops - Look at a line for logical operators "||" or "&&".
+ * @line: A pointer to the chars to check in the line.
+ * @new_len: Pointer to a new length in get_new_len function.
+ */
+
+void logical_ops(char *line, ssize_t *new_len)
+{
+	char previous, current, next;
+
+	previous = *(line - 1);
+	current = *line;
+	next = *(line + 1);
+
+	if (current == '&')
+	{
+		if (next == '&' && previous != ' ')
+			(*new_len)++;
+		else if (previous == '&' && next != ' ')
+			(*new_len)++;
+	}
+	else if (current == '|')
+	{
+		if (next == '|' && previous != ' ')
+			(*new_len)++;
+		else if (previous == '|' && next != ' ')
+			(*new_len)++;
+	}
 }

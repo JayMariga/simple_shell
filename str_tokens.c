@@ -1,120 +1,154 @@
 #include "shell.h"
 
-/**
- * t_strlen - Returns the lenght of a token string for the dynamic memory
- * allocation
- * @str: This is a token from user's cmd
- * @pos: index position in user's command typed into the shell
- * @delm: The delimeter (e.g. " ");
- *
- * Return: The token length
- */
-
-int t_strlen(char *str, int pos, char delm)
-{
-	int len = 0;
-
-	while ((str[pos] != delm) && (str[pos] != '\0'))
-	{
-		pos++;
-		len++;
-	}
-	return (len);
-}
-
+int shellby_alias(char **args, char __attribute__((__unused__)) **front);
+void set_alias(char *var_name, char *value);
+void print_alias(alias_t *alias);
 
 /**
- * t_size - SHould return no of delimeters ignoring continuous delims
- * @str: Should be user's command typed into shell
- * @delm: The delimeter (e.g. " ");
+ * shellby_alias - Builtin command that prints alliases.
+ * @args: A list of arguments.
+ * @front: A double pointer to the start of args.
  *
- * Return: No of delims so that (num token = delims + 1)
+ * Return: Incase of an error occurs - -1.
+ * else - 0.
  */
 
-int t_size(char *str, char delm)
+int shellby_alias(char **args, char __attribute__((__unused__)) **front)
 {
-	int i = 0, num_delm = 0;
+	alias_t *temp = aliases;
+	int i, ret = 0;
+	char *value;
 
-	while (str[i] != '\0')
+	if (!args[0])
 	{
-		if ((str[i] == delm) && (str[i + 1] != delm))
+		while (temp)
 		{
-			/* Should handle continuous delims */
-			num_delm++;
+			print_alias(temp);
+			temp = temp->next;
 		}
-		if ((str[i] == delm) && (str[i + 1] == '\0'))
-		{
-			/* Should handle continuous delims after full command */
-			num_delm--;
-		}
-		i++;
+		return (ret);
 	}
-	return (num_delm);
-}
-
-/**
- * ignore_delm - Should return a version of string without preceeding delims
- * @str: A string
- * @delm: The delimiter (e.g. " ")
- *
- * Return: A new string in (e.g. "    ls -l" --> "ls -l")
- */
-
-char *ignore_delm(char *str, char delm)
-{
-	while (*str == delm)
-		str++;
-	return (str);
-}
-
-/**
- * _str_tok - Should tokenize a string and returns an array of tokens
- * @str: The user's command typed into the shell
- * @delm: The delimeter (e.g. " ");
- *
- * Return: An array of tokens in (e.g. {"ls", "-l", "/tmp"}
- */
-
-char **_str_tok(char *str, char *delm)
-{
-	int buffsize = 0, p = 0, si = 0, i = 0, len = 0, se = 0, t = 0;
-	char **toks = NULL, d_ch;
-
-	d_ch = delm[0];
-	/* creates a new version of string ignoring all delimiters infront*/
-	str = ignore_delm(str, d_ch);
-	/* malloc pointers to store array of tokens (buffsize + 1), and NULL ptr */
-	buffsize = t_size(str, d_ch);
-	toks = malloc(sizeof(char *) * (buffsize + 2));
-	if (toks == NULL)
-		return (NULL);
-	while (str[se] != '\0')	/* Find the string ending index */
-		se++;
-	while (si < se)
+	for (i = 0; args[i]; i++)
 	{
-		/* malloc lengths for each token pointer in the array */
-		if (str[si] != d_ch)
+		temp = aliases;
+		value = _strchr(args[i], '=');
+		if (!value)
 		{
-			len = t_strlen(str, si, d_ch);
-			toks[p] = malloc(sizeof(char) * (len + 1));
-			if (toks[p] == NULL)
-				return (NULL);
-			i = 0;
-			while ((str[si] != d_ch) && (str[si] != '\0'))
+			while (temp)
 			{
-				toks[p][i] = str[si];
-				i++;
-				si++;
+				if (_strcmp(args[i], temp->name) == 0)
+				{
+					print_alias(temp);
+					break;
+				}
+				temp = temp->next;
 			}
-			toks[p][i] = '\0'; /* Null terminate at the end*/
-			t++;
+			if (!temp)
+				ret = create_error(args + i, 1);
 		}
-		/* We handle repeated delims; increment pointer after ("ls __-l")*/
-		if (si < se && (str[si + 1] != d_ch && str[si + 1] != '\0'))
-			p++;
-		si++;
+		else
+			set_alias(args[i], value);
 	}
-	p++;
-	toks[p] = NULL; /* set the last array pointer to NULL */
-	return (toks);
+	return (ret);
+}
+
+/**
+ * set_alias - Should set an alias.
+ * @var_name: The name of alias.
+ * @value: Value of the alias.
+ * First character is a '='.
+ */
+
+void set_alias(char *var_name, char *value)
+{
+	alias_t *temp = aliases;
+	int len, j, k;
+	char *new_value;
+
+	*value = '\0';
+	value++;
+	len = _strlen(value) - _strspn(value, "'\"");
+	new_value = malloc(sizeof(char) * (len + 1));
+	if (!new_value)
+		return;
+	for (j = 0, k = 0; value[j]; j++)
+	{
+		if (value[j] != '\'' && value[j] != '"')
+			new_value[k++] = value[j];
+	}
+	new_value[k] = '\0';
+	while (temp)
+	{
+		if (_strcmp(var_name, temp->name) == 0)
+		{
+			free(temp->value);
+			temp->value = new_value;
+			break;
+		}
+		temp = temp->next;
+	}
+	if (!temp)
+		add_alias_end(&aliases, var_name, new_value);
+}
+
+/**
+ * print_alias - Should print the alias in the format of name='value'.
+ * @alias: This is the pointer to an alias.
+ */
+
+void print_alias(alias_t *alias)
+{
+	char *alias_string;
+	int len = _strlen(alias->name) + _strlen(alias->value) + 4;
+
+	alias_string = malloc(sizeof(char) * (len + 1));
+	if (!alias_string)
+		return;
+	_strcpy(alias_string, alias->name);
+	_strcat(alias_string, "='");
+	_strcat(alias_string, alias->value);
+	_strcat(alias_string, "'\n");
+
+	write(STDOUT_FILENO, alias_string, len);
+	free(alias_string);
+}
+/**
+ * replace_aliases - Replace any matching alias with their value.
+ * @args: 2 Dimension pointer to the arguments.
+ *
+ * Return: 2 Dimension  pointer to the arguments.
+ */
+
+char **replace_aliases(char **args)
+{
+	alias_t *temp;
+	int i;
+	char *new_value;
+
+	if (_strcmp(args[0], "alias") == 0)
+		return (args);
+	for (i = 0; args[i]; i++)
+	{
+		temp = aliases;
+		while (temp)
+		{
+			if (_strcmp(args[i], temp->name) == 0)
+			{
+				new_value = malloc(sizeof(char) * (_strlen(temp->value) + 1));
+				if (!new_value)
+				{
+					free_args(args, args);
+					return (NULL);
+				}
+				_strcpy(new_value, temp->value);
+				free(args[i]);
+				args[i] = new_value;
+				i--;
+				break;
+			}
+			temp = temp->next;
+		}
+	}
+
+	return (args);
 }

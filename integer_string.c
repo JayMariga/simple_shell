@@ -1,70 +1,214 @@
 #include "shell.h"
 
+char *get_args(char *line, int *exe_ret);
+int call_args(char **args, char **front, int *exe_ret);
+int run_args(char **args, char **front, int *exe_ret);
+int handle_args(int *exe_ret);
+int check_args(char **args);
+
 /**
- * numlen - This will count no. of 0s in a tens power number
- * @n: The number value
+ * get_args - Should get a args from standard input.
+ * @line: A buffer to use to  store the command.
+ * @exe_ret: Return value of the last executed cmd.
  *
- * Return: The count of digits
+ * Return: Incase an error occurs - NULL.
+ * else - a pointer to the stored command.
  */
 
-int numlen(int n)
+char *get_args(char *line, int *exe_ret)
 {
-	int count = 0;
-	int num = n;
+	size_t n = 0;
+	ssize_t read;
+	char *prompt = "$ ";
 
-	while (num > 9 || num < -9)
+	if (line)
+		free(line);
+
+	read = _getline(&line, &n, STDIN_FILENO);
+	if (read == -1)
+		return (NULL);
+	if (read == 1)
 	{
-		num /= 10;
-		count++;
+		hist++;
+		if (isatty(STDIN_FILENO))
+			write(STDOUT_FILENO, prompt, 2);
+		return (get_args(line, exe_ret));
 	}
-	return (count);
+
+	line[read - 1] = '\0';
+	variable_replacement(&line, exe_ret);
+	handle_line(&line, read);
+
+	return (line);
 }
 
 /**
- * int_to_string - Should turn an integer into a string
- * @number: An integer value
+ * call_args - Divides operators from cmds and calls them.
+ * @args: A lis of args.
+ * @front: A double pointer to the start of args.
+ * @exe_ret: The return value of the parent process' last executed cmd
  *
- * Return: The int as a string.and NULL if failed
+ * Return: The value of the last cmd.
  */
 
-char *int_to_string(int number)
+int call_args(char **args, char **front, int *exe_ret)
 {
-	int digits, tens, i = 0, t = 0, x;
-	char *res;
+	int ret, index;
 
-	digits = number;
-	tens = 1;
+	if (!args[0])
+		return (*exe_ret);
+	for (index = 0; args[index]; index++)
+	{
+		if (_strncmp(args[index], "||", 2) == 0)
+		{
+			free(args[index]);
+			args[index] = NULL;
+			args = replace_aliases(args);
+			ret = run_args(args, front, exe_ret);
+			if (*exe_ret != 0)
+			{
+				args = &args[++index];
+				index = 0;
+			}
+			else
+			{
+				for (index++; args[index]; index++)
+					free(args[index]);
+				return (ret);
+			}
+		}
+		else if (_strncmp(args[index], "&&", 2) == 0)
+		{
+			free(args[index]);
+			args[index] = NULL;
+			args = replace_aliases(args);
+			ret = run_args(args, front, exe_ret);
+			if (*exe_ret == 0)
+			{
+				args = &args[++index];
+				index = 0;
+			}
+			else
+			{
+				for (index++; args[index]; index++)
+					free(args[index]);
+				return (ret);
+			}
+		}
+	}
+	args = replace_aliases(args);
+	ret = run_args(args, front, exe_ret);
+	return (ret);
+}
 
-	if (number < 0)
-		t = 1;
-	res = malloc(sizeof(char) * (numlen(digits) + 2 + t));
-	if (res == NULL)
-		return (NULL);
-	if (number < 0)
+/**
+ * run_args - Execution of the commands.
+ * @args: A list of arguments.
+ * @front: A double pointer to the start of args.
+ * @exe_ret: The return value of the parent process' last cmd.
+ *
+ * Return: The value of the executed cmd
+ */
+
+int run_args(char **args, char **front, int *exe_ret)
+{
+	int ret, i;
+	int (*builtin)(char **args, char **front);
+
+	builtin = get_builtin(args[0]);
+
+	if (builtin)
 	{
-		res[i] = '-';
-		i++;
+		ret = builtin(args + 1, front);
+		if (ret != EXIT)
+			*exe_ret = ret;
 	}
-	for (x = 0; digits > 9 || digits < -9; x++)
+	else
 	{
-		digits /= 10;
-		tens *= 10;
+		*exe_ret = execute(args, front);
+		ret = *exe_ret;
 	}
-	for (digits = number; x >= 0; x--)
+
+	hist++;
+
+	for (i = 0; args[i]; i++)
+		free(args[i]);
+
+	return (ret);
+}
+
+/**
+ * handle_args - Handles the execution of a command.
+ * @exe_ret: The return value of the parent process' last cmd
+ *
+ * Return: Incase an end-of-file is read - END_OF_FILE (-2).
+ * And incase the input cannot be tokenized - -1.
+ * O/w - The exit value of the last cmd
+ */
+
+int handle_args(int *exe_ret)
+{
+	int ret = 0, index;
+	char **args, *line = NULL, **front;
+
+	line = get_args(line, exe_ret);
+	if (!line)
+		return (END_OF_FILE);
+
+	args = _strtok(line, " ");
+	free(line);
+	if (!args)
+		return (ret);
+	if (check_args(args) != 0)
 	{
-		if (digits < 0)
+		*exe_ret = 2;
+		free_args(args, args);
+		return (*exe_ret);
+	}
+	front = args;
+
+	for (index = 0; args[index]; index++)
+	{
+		if (_strncmp(args[index], ";", 1) == 0)
 		{
-			res[i] = (digits / tens) * -1 + '0';
-			i++;
+			free(args[index]);
+			args[index] = NULL;
+			ret = call_args(args, front, exe_ret);
+			args = &args[++index];
+			index = 0;
 		}
-		else
-		{
-			res[i] = (digits / tens) + '0';
-			i++;
-		}
-		digits %= tens;
-		tens /= 10;
 	}
-	res[i] = '\0';
-	return (res);
+	if (args)
+		ret = call_args(args, front, exe_ret);
+
+	free(front);
+	return (ret);
+}
+
+/**
+ * check_args - Checks for  ';', ';;', '&&', or '||'.
+ * @args: 2 Dimension pointer to tokenized cmds and args.
+ *
+ * Return: Incase a ';', '&&', or '||' is placed at an invalid position - 2.
+ * else - 0.
+ */
+
+int check_args(char **args)
+{
+	size_t i;
+	char *cur, *nex;
+
+	for (i = 0; args[i]; i++)
+	{
+		cur = args[i];
+		if (cur[0] == ';' || cur[0] == '&' || cur[0] == '|')
+		{
+			if (i == 0 || cur[1] == ';')
+				return (create_error(&args[i], 2));
+			nex = args[i + 1];
+			if (nex && (nex[0] == ';' || nex[0] == '&' || nex[0] == '|'))
+				return (create_error(&args[i + 1], 2));
+		}
+	}
+	return (0);
 }

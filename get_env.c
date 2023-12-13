@@ -1,69 +1,78 @@
 #include "shell.h"
 
+char **_copyenv(void);
+void free_env(void);
+char **_getenv(const char *var);
+
 /**
- * c_strdup - This is the custom string duplication;
- * and excludes beginning bytes
- * @str: This is the string to duplicate
- * (e.g. environmental variable PATH=/bin:/bin/ls)
- * @cs: The no of bytes to exclude (e.g. excludes "PATH=")
+ * _copyenv - Comes up with  a copy of the environment.
  *
- * Return: A duplicate string (e.g. /bin:/bin/ls)
+ * Return: In case of an error occurs - NULL.
+ * O/w - Will create a double pointer to the new copy.
  */
 
-char *c_strdup(char *str, int cs)
+char **_copyenv(void)
 {
-	char *duplicate_str;
-	int i, len = 0;
+	char **new_environ;
+	size_t size;
+	int index;
 
-	/* This is to validate str input */
-	if (str == NULL)
-	return (NULL);
+	for (size = 0; environ[size]; size++)
+		;
 
-	/* calculates the len + null terminator to malloc */
-	while (*(str + len))
-		len++;
-	len++;
-
-	/* allocate memory but exclude environmental variable title */
-	duplicate_str = malloc(sizeof(char) * (len - cs));
-	if (duplicate_str == NULL)
+	new_environ = malloc(sizeof(char *) * (size + 1));
+	if (!new_environ)
 		return (NULL);
 
-	i = 0;
-	while (i < (len - cs))
+	for (index = 0; environ[index]; index++)
 	{
-		*(duplicate_str + i) = *(str + cs + i);
-		i++;
+		new_environ[index] = malloc(_strlen(environ[index]) + 1);
+
+		if (!new_environ[index])
+		{
+			for (index--; index >= 0; index--)
+				free(new_environ[index]);
+			free(new_environ);
+			return (NULL);
+		}
+		_strcpy(new_environ[index], environ[index]);
 	}
-	return (duplicate_str);
+	new_environ[index] = NULL;
+
+	return (new_environ);
 }
 
-
 /**
- * get_env - Locates and returns a copy of the requested env variable
- * @str: The string to store result in
- * @env: The complete set of environmental variables
- *
- * Return: copy of specified env variable
+ * free_env - Should free the env copy.
  */
 
-char *get_env(char *str, list_t *env)
+void free_env(void)
 {
-	int j = 0, cs = 0;
+	int index;
 
-	while (env != NULL)
+	for (index = 0; environ[index]; index++)
+		free(environ[index]);
+	free(environ);
+}
+
+/**
+ * _getenv - Will find an env var from the PATH.
+ * @var: Provided name of the env var to expect.
+ *
+ * Return: Incase the env variable does not exist - NULL.
+ * If they do - a pointer to the environmental variable.
+ */
+
+char **_getenv(const char *var)
+{
+	int index, len;
+
+	len = _strlen(var);
+	for (index = 0; environ[index]; index++)
 	{
-		j = 0;
-		/* Help us find desired env variable */
-		while ((env->var)[j] == str[j])
-			j++;
-		if (str[j] == '\0' && (env->var)[j] == '=')
-			break;
-		env = env->next;
+		if (_strncmp(var, environ[index], len) == 0)
+			return (&environ[index]);
 	}
 
-	while (str[cs] != '\0')
-		cs++;
-	cs++;
-	return (c_strdup(env->var, cs));
+	return (NULL);
 }

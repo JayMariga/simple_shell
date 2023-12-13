@@ -1,104 +1,118 @@
 #include "shell.h"
 
+int num_len(int num);
+char *_itoa(int num);
+int create_error(char **args, int err);
+
 /**
- * not_found - write error when found ("sh: 1: lss: not found")
- * @str: The user's typed command
- * @c_n: The nth user's typed command
- * @env: The env variables linked list to write shell name
+ * num_len - Should Count the length of a no.
+ * @num: No. to be measured.
+ *
+ * Return: Digit length.
  */
 
-void not_found(char *str, int c_n, list_t *env)
+int num_len(int num)
 {
-	int count = 0;
-	char *shell, *num;
+	unsigned int num1;
+	int len = 1;
 
-	/* The shell name to write */
-	shell = get_env("_", env);
-	while (shell[count] != '\0')
-		count++;
-	write(STDOUT_FILENO, shell, count);
-	free(shell);
-	write(STDOUT_FILENO, ": ", 2);
+	if (num < 0)
+	{
+		len++;
+		num1 = num * -1;
+	}
+	else
+	{
+		num1 = num;
+	}
+	while (num1 > 9)
+	{
+		len++;
+		num1 /= 10;
+	}
 
-	/* We convert command line number to str to write */
-	num = int_to_string(c_n);
-	count = 0;
-	while (num[count] != '\0')
-		count++;
-	write(STDOUT_FILENO, num, count);
-	free(num);
-	write(STDOUT_FILENO, ": ", 2);
-	count = 0;
-	while (str[count] != '\0')
-		count++;
-	write(STDOUT_FILENO, str, count);
-	write(STDOUT_FILENO, ": ", 2);
-	write(STDOUT_FILENO, "not found\n", 10);
+	return (len);
 }
 
 /**
- * cant_cd_to - write error when found ("sh: 2: cd: can't cd to xyz")
- * @str: The user's typed argt after the command cd
- * @c_n: The nth user's typed cmd.
- * @env: The env variables linked list to write shell name
+ * _itoa - This should Convert an int to a string.
+ * @num: No. in integer.
+ *
+ * Return: Converted string.
  */
 
-void cant_cd_to(char *str, int c_n, list_t *env)
+char *_itoa(int num)
 {
-	int count = 0;
-	char *shell, *num;
+	char *buffer;
+	int len = num_len(num);
+	unsigned int num1;
 
-	shell = get_env("_", env);
-	while (shell[count] != '\0')
-		count++;
-	write(STDOUT_FILENO, shell, count);
-	free(shell);
-	write(STDOUT_FILENO, ": ", 2);
-	num = int_to_string(c_n);
-	count = 0;
-	while (num[count] != '\0')
-		count++;
-	write(STDOUT_FILENO, num, count);
-	free(num);
-	write(STDOUT_FILENO, ": ", 2);
-	write(STDOUT_FILENO, "cd: can't cd to ", 16);
-	count = 0;
-	while (str[count] != '\0')
-		count++;
-	write(STDOUT_FILENO, str, count);
-	write(STDOUT_FILENO, "\n", 1);
+	buffer = malloc(sizeof(char) * (len + 1));
+	if (!buffer)
+		return (NULL);
+
+	buffer[len] = '\0';
+
+	if (num < 0)
+	{
+		num1 = num * -1;
+		buffer[0] = '-';
+	}
+	else
+	{
+		num1 = num;
+	}
+
+	len--;
+	do {
+		buffer[len] = (num1 % 10) + '0';
+		num1 /= 10;
+		len--;
+	} while (num1 > 0);
+
+	return (buffer);
 }
 
+
 /**
- * illegal_number - write error when found
- * ("sh: 3: exit: Illegal number abc (or -1)")
- * @str: The user's typed argt after the cmd exit
- * @c_n: The nth user's typed cmd
- * @env: The env variables linked list to write shell name
+ * create_error - Will compose a custom error message to stderr.
+ * @args: A no. array of arguments.
+ * @err: Value of the error.
+ *
+ * Return: Err value.
  */
 
-void illegal_number(char *str, int c_n, list_t *env)
+int create_error(char **args, int err)
 {
-	int count = 0;
-	char *shell = NULL, *num = NULL;
+	char *error;
 
-	shell = get_env("_", env);
-	while (shell[count] != '\0')
-		count++;
-	write(STDOUT_FILENO, shell, count);
-	free(shell);
-	write(STDOUT_FILENO, ": ", 2);
-	num = int_to_string(c_n);
-	count = 0;
-	while (num[count] != '\0')
-		count++;
-	write(STDOUT_FILENO, num, count);
-	free(num);
-	write(STDOUT_FILENO, ": ", 2);
-	write(STDOUT_FILENO, "exit: Illegal number: ", 22);
-	count = 0;
-	while (str[count] != '\0')
-		count++;
-	write(STDOUT_FILENO, str, count);
-	write(STDOUT_FILENO, "\n", 1);
+	switch (err)
+	{
+	case -1:
+		error = error_env(args);
+		break;
+	case 1:
+		error = error_1(args);
+		break;
+	case 2:
+		if (*(args[0]) == 'e')
+			error = error_2_exit(++args);
+		else if (args[0][0] == ';' || args[0][0] == '&' || args[0][0] == '|')
+			error = error_2_syntax(args);
+		else
+			error = error_2_cd(args);
+		break;
+	case 126:
+		error = error_126(args);
+		break;
+	case 127:
+		error = error_127(args);
+		break;
+	}
+	write(STDERR_FILENO, error, _strlen(error));
+
+	if (error)
+		free(error);
+	return (err);
+
 }
