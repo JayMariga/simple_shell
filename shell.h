@@ -66,7 +66,8 @@ char *_which(char *str, list_t *env);
 int c_t_size(char *str, char delm);
 char **c_str_tok(char *str, char *delm);
 int _env(char **str, list_t *env);
-
+char *int_to_string(int number);
+int numlen(int n);
 
 
 
