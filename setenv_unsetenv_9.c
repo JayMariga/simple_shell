@@ -32,6 +32,51 @@ int find_env(list_t *env, char *str)
 }
 
 /**
+ * _unsetenv - Should remove node in env linked list
+ * @env: Pointer to a linked list
+ * @str: User's input command (e.g. "unsetenv MAIL")
+ *
+ * Return: 0 on success
+ */
+
+int _unsetenv(list_t **env, char **str)
+{
+        int index = 0, j = 0;
+
+        /* Are the arguments enough */
+        if (str[1] == NULL)
+        {
+                write(STDOUT_FILENO, "Too few arguments\n", 18);
+                free_double_ptr(str);
+                return (-1);
+        }
+
+        /* Get index of the node to delete */
+        index = find_env(*env, str[1]);
+
+        /* Free memory and check if index is not found, hence error */
+        free_double_ptr(str);
+        if (index == -1)
+        {
+                write(STDOUT_FILENO, "Cannot find\n", 12);
+                return (-1);
+        }
+
+        /* delete the node a a specified index */
+        j = delete_nodeint_at_index(env, index);
+
+        /* Error if deletion failed */
+        if (j == -1)
+        {
+                write(STDOUT_FILENO, "Cannot find\n", 12);
+                return (-1);
+        }
+
+        return (0);
+}
+
+
+/**
  * _setenv - Modifies an environmental variable in linked list
  * @env: Pointer to linked list
  * @str: user's input command (e.g. "setenv USER Superman")
@@ -54,9 +99,9 @@ int _setenv(list_t **env, char **str)
 	}
 
 	/* Concatenates string to form new node data */
-	new_node_data = _strdup(str[1]);
-	new_node_data = _strcat(cat, "=");
-	new_node_data = _strcat(cat, str[2]);
+	cat = _strdup(str[1]);
+	cat = _strcat(cat, "=");
+	cat = _strcat(cat, str[2]);
 
 	/* Find the index to traverse to the new node */
 	index = find_env(*env, str[1]);
@@ -83,53 +128,7 @@ int _setenv(list_t **env, char **str)
 	}
 
 	/* free memory and returning success */
-	free(new_node_data);
+	free(cat);
 	free_double_ptr(str);
-	return (0);
-}
-
-
-
-/**
- * _unsetenv - Should remove node in env linked list
- * @env: Pointer to a linked list
- * @str: User's input command (e.g. "unsetenv MAIL")
- *
- * Return: 0 on success
- */
-
-int _unsetenv(list_t **env, char **str)
-{
-	int index = 0, j = 0;
-
-	/* Are the arguments enough */
-	if (str[1] == NULL)
-	{
-		write(STDOUT_FILENO, "Too few arguments\n", 18);
-		free_double_ptr(str);
-		return (-1);
-	}
-
-	/* Get index of the node to delete */
-	index = find_env(*env, str[1]);
-
-	/* Free memory and check if index is not found, hence error */
-	free_double_ptr(str);
-	if (index == -1)
-	{
-		write(STDOUT_FILENO, "Cannot find\n", 12);
-		return (-1);
-	}
-
-	/* delete the node a a specified index */
-	j = delete_nodeint_at_index(env, index);
-
-	/* Error if deletion failed */
-	if (j == -1)
-	{
-		write(STDOUT_FILENO, "Cannot find\n", 12);
-		return (-1);
-	}
-
 	return (0);
 }

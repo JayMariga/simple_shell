@@ -62,6 +62,11 @@ char **_str_tok(char *str, char *delm);
 char *ignore_delm(char *str, char delm);
 int t_size(char *str, char delm);
 int t_strlen(char *str, int pos, char delm);
+char *_which(char *str, list_t *env);
+int c_t_size(char *str, char delm);
+char **c_str_tok(char *str, char *delm);
+int _env(char **str, list_t *env);
+
 
 
 
