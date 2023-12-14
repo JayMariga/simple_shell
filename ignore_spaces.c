@@ -1,10 +1,6 @@
 #include "shell.h"
 
-char *error_env(char **args);
-char *error_1(char **args);
-char *error_2_exit(char **args);
-char *error_2_cd(char **args);
-char *error_2_syntax(char **args);
+
 /**
  * error_env - Should create an error message for the errors.
  * @args: This is a list of arguments passed to the command.

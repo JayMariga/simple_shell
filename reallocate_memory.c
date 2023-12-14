@@ -1,10 +1,5 @@
 #include "shell.h"
 
-void help_all(void);
-void help_alias(void);
-void help_cd(void);
-void help_exit(void);
-void help_help(void);
 
 /**
  * help_all - Displays all possible builtin commands.
@@ -76,6 +71,7 @@ void help_cd(void)
 /**
  * help_exit - Displays infor on the builtin command 'exit'.
  */
+
 void help_exit(void)
 {
 	char *msg = "exit: exit [STATUS]\n\tExits the shell.\n\n\tThe ";
@@ -92,6 +88,7 @@ void help_exit(void)
 /**
  * help_help - Displays info on the builtin command 'help'.
  */
+
 void help_help(void)
 {
 	char *msg = "help: help\n\tSee all possible Shellby builtin commands.\n";

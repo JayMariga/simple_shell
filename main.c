@@ -1,7 +1,5 @@
 #include "shell.h"
 
-void sig_handler(int sig);
-int execute(char **args, char **front);
 
 /**
  * sig_handler - Should prints a prompt upon a signal.

@@ -1,8 +1,5 @@
 #include "shell.h"
 
-char **_copyenv(void);
-void free_env(void);
-char **_getenv(const char *var);
 
 /**
  * _copyenv - Comes up with  a copy of the environment.
